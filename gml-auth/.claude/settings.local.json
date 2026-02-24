@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd:*)",
+      "Bash(head:*)",
+      "WebFetch(domain:gml-launcher.ru)",
+      "Bash(cat:*)",
+      "Bash(cd D:/gml/gml-auth && go test ./news/... -run TestTelegramFetch 2>&1)",
+      "Bash(cd D:/gml/gml-auth && go test ./news/... -run TestCache 2>&1)",
+      "Bash(cd /d/gml/gml-auth && go test ./news/... -v 2>&1)"
+    ]
+  }
+}

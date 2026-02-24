@@ -1,0 +1,162 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <Company>Recloud LLC</Company>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="15.1.0"/>
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.6.2" />
+    <PackageReference Include="FluentValidation" Version="11.12.0"/>
+    <PackageReference Include="Gml.Core" Version="2025.3.3.2"/>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0"/>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0"/>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4"/>
+    <PackageReference Include="Sentry" Version="5.16.2"/>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1"/>
+    <PackageReference Include="System.Reactive" Version="6.1.0"/>
+	<PackageReference Include="Otp.NET" Version="1.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.Development.json">
+      <DependentUpon>appsettings.json</DependentUpon>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Gml.WebApi.Tests"/>
+    <InternalsVisibleTo Include="Gml.Backend.Tests"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Core\Handlers\AuthHandler.cs">
+      <DependentUpon>IAuthHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\ProfileHandler.cs">
+      <DependentUpon>IProfileHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\DataLifeEngineAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AuthServiceFactory.cs">
+      <DependentUpon>IAuthServiceFactory.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\UndefinedAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AuthService.cs">
+      <DependentUpon>IAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\FileHandler.cs">
+      <DependentUpon>IFileHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Services\SystemService.cs">
+      <DependentUpon>ISystemService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\MinecraftHandler.cs">
+      <DependentUpon>IMinecraftHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\TextureIntegrationHandler.cs">
+      <DependentUpon>ITextureIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\AuthIntegrationHandler.cs">
+      <DependentUpon>IAuthIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\GitHubIntegrationHandler.cs">
+      <DependentUpon>IGitHubIntegrationHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Services\GitHubService.cs">
+      <DependentUpon>IGitHubService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\SentryErrorSaveHandler.cs">
+      <DependentUpon>IErrorSaveHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AnyAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\SettingsHandler.cs">
+      <DependentUpon>ISettingsHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Repositories\SettingsRepository.cs">
+      <DependentUpon>ISettingsRepository.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\AzuriomAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\DiscordHandler.cs">
+      <DependentUpon>IDiscordHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\EasyCabinetAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\UnicoreCMSAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\CustomEndpointAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\PluginHandler.cs">
+      <DependentUpon>IPluginHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\LauncherUpdateHandler.cs">
+      <DependentUpon>ILauncherUpdateHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\ServersHandler.cs">
+      <DependentUpon>IServersHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\NotificationHandler.cs">
+      <DependentUpon>INotificationsHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\NamelessMCAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\SentryHandler.cs">
+      <DependentUpon>ISentryHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\PlayersHandler.cs">
+      <DependentUpon>IPlayersHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Handlers\NewsHandler.cs">
+      <DependentUpon>INewsHandler.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\WebMCRAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Core\Integrations\Auth\WordPressAuthService.cs">
+      <DependentUpon>IPlatformAuthService.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="data.db"/>
+    <None Remove="private.key"/>
+    <None Remove="public.key"/>
+    <None Remove="data.db-shm"/>
+    <None Remove="data.db-wal"/>
+    <None Remove="builds\build-16-05-2024 16-44-44\linux-x64\Gml.Launcher" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\plugins\Gml.Web.Api.EndpointSDK\Gml.Web.Api.EndpointSDK.csproj"/>
+  </ItemGroup>
+
+</Project>
