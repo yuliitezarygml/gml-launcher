@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: easycabinet-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: easycabinet
+      MYSQL_USER: cabinet
+      MYSQL_PASSWORD: cabinetpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./packages/backend
+      dockerfile: Dockerfile
+    container_name: easycabinet-backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      HOST: "0.0.0.0"
+      PORT: 4000
+      FRONTEND_URL: "http://localhost:3000"
+      BACKEND_URL: "http://localhost:4000"
+      PROJECT_NAME: "EasyCabinet"
+      JWT_SECRET: "your-secret-key-change-in-production"
+      JWT_EXPIRES_IN: "30m"
+      COOKIE_SECURE: "false"
+      COOKIE_SECRET: "cookie-secret-change-in-production"
+      COOKIE_DOMAIN: "localhost"
+      COOKIE_EXPIRES_IN: "2592000"
+      DATABASE_URL: "mysql://cabinet:cabinetpass@mysql:3306/easycabinet"
+      USE_SENDMAIL: "false"
+      EMAIL_FROM: "no-reply@example.com"
+      SMTP_HOST: "localhost"
+      SMTP_PORT: "587"
+      SMTP_SECURE: "false"
+      SMTP_USER: "user"
+      SMTP_PASS: "pass"
+      STORAGE_FORMAT: "local"
+    ports:
+      - "4000:4000"
+    volumes:
+      - backend_uploads:/app/uploads
+    command: sh -c "npx prisma migrate deploy && npm run start:prod"
+
+  frontend:
+    build:
+      context: ./packages/frontend
+      dockerfile: Dockerfile
+    container_name: easycabinet-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      VITE_API_URL: "http://localhost:4000"
+    ports:
+      - "3000:3000"
+
+volumes:
+  mysql_data:
+  backend_uploads:
