@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint \"src/**/*.{js,jsx}\" --fix"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.15.3",
+    "@tailwindcss/vite": "^4.0.6",
+    "axios": "^1.12.0",
+    "notiflix": "^3.2.8",
+    "skinview3d": "^3.1.0",
+    "solid-icons": "^1.1.0",
+    "solid-js": "^1.9.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.20.0",
+    "eslint": "^9.20.1",
+    "eslint-plugin-solid": "^0.14.5",
+    "globals": "^16.0.0",
+    "tailwindcss": "^4.0.6",
+    "vite": "^6.1.0",
+    "vite-plugin-solid": "^2.11.1"
+  }
+}

@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.33920.267
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{1FAA6F5C-6707-4264-B5A2-060063FF6F60}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gml.Web.Skin.Service", "src\Gml.Web.Skin.Service\Gml.Web.Skin.Service.csproj", "{6862D3E6-6940-4CB6-BB1B-46255C8712F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "common", "common", "{3E651A27-5CBF-427D-A2E7-B499FB27E26F}"
+	ProjectSection(SolutionItems) = preProject
+		Dockerfile = Dockerfile
+		.dockerignore = .dockerignore
+		.gitignore = .gitignore
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6862D3E6-6940-4CB6-BB1B-46255C8712F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6862D3E6-6940-4CB6-BB1B-46255C8712F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6862D3E6-6940-4CB6-BB1B-46255C8712F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6862D3E6-6940-4CB6-BB1B-46255C8712F7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1A77CFAB-84C9-4D46-A26D-1684AF8EE58F}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6862D3E6-6940-4CB6-BB1B-46255C8712F7} = {1FAA6F5C-6707-4264-B5A2-060063FF6F60}
+	EndGlobalSection
+EndGlobal

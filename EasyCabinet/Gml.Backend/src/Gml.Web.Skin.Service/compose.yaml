@@ -1,0 +1,16 @@
+﻿services:
+  gml.web.skin.service:
+    image: gml.web.skin.service
+    container_name: gml-web-skins
+    build:
+      context: src/Gml.Web.Skin.Service
+      dockerfile: Dockerfile
+    ports:
+      - 5000:8085
+    restart: always
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8085;
+    user: "${UID}:${GID}"
+    volumes:
+      - ./data/TextureService:/app/Storage

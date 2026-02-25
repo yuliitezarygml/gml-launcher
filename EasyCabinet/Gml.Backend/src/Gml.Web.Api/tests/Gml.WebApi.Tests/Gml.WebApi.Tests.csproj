@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Faker.Net" Version="2.0.163"/>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.1"/>
+    <PackageReference Include="NUnit" Version="3.13.3"/>
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2"/>
+    <PackageReference Include="NUnit.Analyzers" Version="3.6.1"/>
+    <PackageReference Include="coverlet.collector" Version="6.0.4">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Sentry" Version="5.16.2"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Gml.Web.Api\Gml.Web.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="skin.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
