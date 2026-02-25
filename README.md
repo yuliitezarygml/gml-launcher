@@ -20,6 +20,7 @@
 - [Переменные окружения](#переменные-окружения)
 - [Структура проекта](#структура-проекта)
 - [Платформы](#платформы)
+- [EasyCabinet — Личный кабинет игрока](#easycabinet--личный-кабинет-игрока)
 
 ---
 
@@ -32,6 +33,7 @@
 | **Gml.Launcher** | C# / Avalonia 11 | Кросс-платформенный десктопный лаунчер |
 | **gml-auth** | Go 1.25 | Сервис авторизации + агрегация новостей |
 | **ser** | Docker / Java 17 | Minecraft игровой сервер (Fabric 1.19.4) |
+| **EasyCabinet** | TypeScript / NestJS + SolidJS | Личный кабинет игрока для AuroraLauncher |
 
 ---
 
@@ -398,6 +400,18 @@ mindmap
       authlib-injector
       RCON Protocol
       Docker Container
+    EasyCabinet
+      NestJS 11
+      Fastify
+      Prisma ORM
+      MySQL 8.0
+      JWT + Bcrypt
+      SolidJS 1.9
+      Vite 6
+      TailwindCSS 4
+      skinview3d
+      Docker Compose
+      S3 Compatible Storage
 ```
 
 ---
@@ -712,12 +726,36 @@ gml/
 │   │   └── cache.go                  # TTL кэш
 │   └── config/config.go              # Конфигурация
 │
-└── ser/                               # Minecraft игровой сервер
-    ├── docker-compose.yml            # Fabric 1.19.4 / Java 17
-    └── data/
-        ├── server.properties         # Настройки сервера
-        └── libraries/
-            └── authlib-injector.jar  # Кастомная авторизация
+├── ser/                               # Minecraft игровой сервер
+│   ├── docker-compose.yml            # Fabric 1.19.4 / Java 17
+│   └── data/
+│       ├── server.properties         # Настройки сервера
+│       └── libraries/
+│           └── authlib-injector.jar  # Кастомная авторизация
+│
+└── EasyCabinet/                       # Личный кабинет игрока
+    ├── packages/
+    │   ├── backend/                  # NestJS Backend API
+    │   │   ├── src/
+    │   │   │   ├── auth/            # Авторизация (JWT + Cookie)
+    │   │   │   ├── users/           # Управление пользователями
+    │   │   │   ├── aurora/          # Aurora Launcher API
+    │   │   │   ├── files/           # Загрузка скинов/плащей
+    │   │   │   └── emails/          # Email-уведомления
+    │   │   ├── prisma/
+    │   │   │   └── schema.prisma    # Схема MySQL БД
+    │   │   └── uploads/             # Локальное хранилище файлов
+    │   │
+    │   └── frontend/                 # SolidJS Frontend
+    │       ├── src/
+    │       │   ├── pages/           # Страницы (index, login, profile)
+    │       │   ├── components/      # UI-компоненты
+    │       │   ├── api/             # API-клиенты
+    │       │   └── services/        # Axios, Notiflix
+    │       └── public/              # Статические файлы
+    │
+    ├── docker-compose.yml            # MySQL + Backend + Frontend
+    └── pnpm-workspace.yaml           # Monorepo конфигурация
 ```
 
 ---
@@ -729,3 +767,531 @@ gml/
 | Windows | x86, x64, ARM64 |
 | Linux | x64, musl-x64, ARM64, ARM musl |
 | macOS | x64, ARM64 (Apple Silicon) |
+
+---
+
+## EasyCabinet — Личный кабинет игрока
+
+**EasyCabinet** — это веб-приложение для управления профилем игрока Minecraft, совместимое с [AuroraLauncher](https://github.com/AuroraTeam/AuroraLauncher). Позволяет игрокам регистрироваться, входить в систему, загружать скины и плащи.
+
+### Архитектура EasyCabinet
+
+```mermaid
+graph TB
+    subgraph Client["Клиент"]
+        BROWSER["Браузер\nSolidJS App"]
+    end
+
+    subgraph Docker["Docker Compose"]
+        FRONTEND["easycabinet-frontend\nNginx + SolidJS\n:3000"]
+        BACKEND["easycabinet-backend\nNestJS API\n:4000"]
+        MYSQL["easycabinet-mysql\nMySQL 8.0\n:3306"]
+    end
+
+    subgraph Storage["Хранилище"]
+        DB[("MySQL Database\nusers, sessions")]
+        UPLOADS["Uploads Volume\nskins, capes"]
+    end
+
+    BROWSER -->|"HTTP :3000"| FRONTEND
+    FRONTEND -->|"API :4000"| BACKEND
+    BACKEND --> MYSQL
+    BACKEND --- UPLOADS
+    MYSQL --- DB
+```
+
+### Технологический стек
+
+**Backend (NestJS):**
+- NestJS 11 + Fastify
+- Prisma ORM + MySQL
+- JWT авторизация + Cookie-based refresh tokens
+- Bcrypt для хеширования паролей
+- Загрузка файлов (скины/плащи)
+- Email-уведомления (Nodemailer)
+- Опциональная поддержка Redis для кэша
+- Опциональная поддержка S3 для хранения файлов
+
+**Frontend (SolidJS):**
+- SolidJS 1.9 (реактивный фреймворк)
+- Vite 6 (сборщик)
+- TailwindCSS 4 (стилизация)
+- Axios (HTTP-клиент)
+- SolidJS Router (маршрутизация)
+- skinview3d (3D-превью скинов)
+- Notiflix (уведомления)
+
+### Установка EasyCabinet
+
+#### Требования
+
+| Инструмент | Версия | Назначение |
+|-----------|--------|------------|
+| Docker | 24+ | Запуск всех сервисов |
+| Docker Compose | 2.x | Оркестрация контейнеров |
+| pnpm | 9+ | Менеджер пакетов (опционально для разработки) |
+
+#### Быстрый старт с Docker
+
+```bash
+cd EasyCabinet
+
+# Запустить все сервисы (MySQL, Backend, Frontend)
+docker-compose up -d
+
+# Проверить статус
+docker-compose ps
+
+# Посмотреть логи
+docker-compose logs -f
+```
+
+| Сервис | URL | Описание |
+|--------|-----|----------|
+| Frontend | http://localhost:3000 | Веб-интерфейс |
+| Backend API | http://localhost:4000 | REST API |
+| MySQL | localhost:3306 | База данных |
+
+#### Установка для разработки
+
+```bash
+cd EasyCabinet
+
+# Установить зависимости (требуется pnpm)
+pnpm install
+
+# Настроить Backend
+cd packages/backend
+cp .env.example .env
+# Отредактировать .env (см. раздел "Настройка Backend")
+
+# Создать базу данных MySQL
+mysql -u root -p
+CREATE DATABASE easycabinet;
+exit;
+
+# Применить миграции Prisma
+pnpx prisma migrate deploy
+
+# Запустить Backend в dev-режиме
+pnpm run start:dev
+# Backend запустится на http://localhost:4000
+
+# В новом терминале запустить Frontend
+cd packages/frontend
+pnpm run dev
+# Frontend запустится на http://localhost:5173
+```
+
+### Настройка Backend
+
+Создайте файл `packages/backend/.env` на основе `.env.example`:
+
+```env
+# Сервер
+HOST="0.0.0.0"
+PORT=4000
+FRONTEND_URL="http://localhost:3000"
+BACKEND_URL="http://localhost:4000"
+
+# Проект
+PROJECT_NAME="EasyCabinet"
+
+# JWT токены
+JWT_SECRET="измените-на-случайную-строку"
+JWT_EXPIRES_IN="30m"
+
+# Cookie (для refresh token)
+COOKIE_SECURE=false  # true для HTTPS
+COOKIE_SECRET="измените-на-случайную-строку"
+COOKIE_DOMAIN="localhost"
+COOKIE_EXPIRES_IN=2592000  # 30 дней в секундах
+
+# База данных MySQL
+DATABASE_URL="mysql://cabinet:cabinetpass@localhost:3306/easycabinet"
+
+# Email (опционально)
+USE_SENDMAIL=false
+EMAIL_FROM="no-reply@example.com"
+SMTP_HOST="localhost"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="user"
+SMTP_PASS="pass"
+
+# Redis (опционально, для кэша)
+REDIS_URL=""
+
+# S3 хранилище (опционально)
+STORAGE_FORMAT="local"  # local или s3
+S3_ACCESS_KEY_ID="minioadmin"
+S3_SECRET_ACCESS_KEY="minioadmin"
+S3_ENDPOINT="http://127.0.0.1:9000"
+S3_REGION="not-used"
+S3_BUCKET="easy-cabinet"
+S3_PUBLIC_URL="http://127.0.0.1:9000"
+```
+
+### Настройка Frontend
+
+Создайте файл `packages/frontend/.env`:
+
+```env
+VITE_API_URL="http://localhost:4000"
+```
+
+### API Эндпоинты EasyCabinet
+
+#### Авторизация (`/auth`)
+
+| Метод | Путь | Описание | Тело запроса |
+|-------|------|----------|--------------|
+| `POST` | `/auth/register` | Регистрация | `{ email, login, password }` |
+| `POST` | `/auth/login` | Вход | `{ login, password }` |
+| `POST` | `/auth/logout` | Выход | - |
+| `POST` | `/auth/refresh` | Обновление токена | - (cookie) |
+| `POST` | `/auth/reset-password` | Сброс пароля | `{ email }` |
+| `POST` | `/auth/change-password` | Смена пароля | `{ resetToken, password }` |
+
+#### Пользователи (`/users`)
+
+| Метод | Путь | Описание | Авторизация |
+|-------|------|----------|-------------|
+| `GET` | `/users` | Получить профиль | JWT Bearer |
+| `PUT` | `/users` | Обновить профиль (скин/плащ) | JWT Bearer |
+
+#### Aurora Launcher API (`/aurora`)
+
+Эндпоинты для интеграции с AuroraLauncher:
+
+| Метод | Путь | Описание |
+|-------|------|----------|
+| `POST` | `/aurora/auth` | Авторизация игрока |
+| `POST` | `/aurora/join` | Присоединение к серверу |
+| `POST` | `/aurora/hasJoined` | Проверка сессии |
+| `POST` | `/aurora/profile` | Получить профиль игрока |
+| `POST` | `/aurora/profiles` | Получить несколько профилей |
+
+### Структура базы данных
+
+```sql
+CREATE TABLE User (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  uuid VARCHAR(36) UNIQUE DEFAULT (UUID()),
+  email VARCHAR(255) UNIQUE NOT NULL,
+  login VARCHAR(255) UNIQUE NOT NULL,
+  password VARCHAR(60) NOT NULL,  -- bcrypt hash
+  resetToken VARCHAR(32) UNIQUE,
+  accessToken VARCHAR(255),       -- для Aurora API
+  serverId VARCHAR(255),           -- для Aurora API
+  skinHash VARCHAR(255),           -- хеш файла скина
+  capeHash VARCHAR(255),           -- хеш файла плаща
+  isAlex TINYINT                   -- тип модели (Alex/Steve)
+);
+```
+
+### Привязка к AuroraLauncher
+
+Для интеграции EasyCabinet с AuroraLauncher измените конфигурацию LaunchServer:
+
+```hjson
+auth:
+{
+    type: json
+    authUrl: http://ДОМЕН_BACKEND/aurora/auth
+    joinUrl: http://ДОМЕН_BACKEND/aurora/join
+    hasJoinedUrl: http://ДОМЕН_BACKEND/aurora/hasJoined
+    profileUrl: http://ДОМЕН_BACKEND/aurora/profile
+    profilesUrl: http://ДОМЕН_BACKEND/aurora/profiles
+}
+injector:
+{
+    skinDomains: [
+        "ДОМЕН_BACKEND"
+    ]
+}
+```
+
+Замените `ДОМЕН_BACKEND` на адрес вашего Backend-сервера (например, `api.example.com` или `localhost:4000`).
+
+### Структура проекта EasyCabinet
+
+```
+EasyCabinet/
+├── packages/
+│   ├── backend/                    # NestJS Backend API
+│   │   ├── src/
+│   │   │   ├── auth/              # Модуль авторизации
+│   │   │   │   ├── auth.controller.ts
+│   │   │   │   ├── auth.service.ts
+│   │   │   │   ├── jwt.strategy.ts
+│   │   │   │   └── dto/           # DTO для валидации
+│   │   │   ├── users/             # Модуль пользователей
+│   │   │   │   ├── users.controller.ts
+│   │   │   │   ├── users.service.ts
+│   │   │   │   └── prisma.service.ts
+│   │   │   ├── aurora/            # Aurora Launcher API
+│   │   │   │   ├── aurora.controller.ts
+│   │   │   │   └── aurora.service.ts
+│   │   │   ├── files/             # Сервис файлов (скины/плащи)
+│   │   │   ├── emails/            # Email-уведомления
+│   │   │   └── main.ts            # Точка входа
+│   │   ├── prisma/
+│   │   │   └── schema.prisma      # Схема БД
+│   │   ├── uploads/               # Загруженные файлы
+│   │   ├── .env.example
+│   │   ├── Dockerfile
+│   │   └── package.json
+│   │
+│   └── frontend/                   # SolidJS Frontend
+│       ├── src/
+│       │   ├── pages/             # Страницы приложения
+│       │   │   ├── index.jsx      # Главная страница
+│       │   │   ├── login.jsx      # Вход
+│       │   │   ├── register.jsx   # Регистрация
+│       │   │   ├── profile.jsx    # Профиль игрока
+│       │   │   ├── forgot-password.jsx
+│       │   │   └── change-password.jsx
+│       │   ├── components/        # React-компоненты
+│       │   │   └── Header.jsx
+│       │   ├── api/               # API-клиенты
+│       │   │   ├── auth.js
+│       │   │   └── user.js
+│       │   ├── services/          # Сервисы (axios, notiflix)
+│       │   ├── layouts/           # Layouts
+│       │   ├── App.jsx
+│       │   └── index.css
+│       ├── public/
+│       ├── .env
+│       ├── Dockerfile
+│       ├── nginx.conf
+│       └── package.json
+│
+├── docker-compose.yml              # Оркестрация всех сервисов
+├── pnpm-workspace.yaml             # Monorepo конфигурация
+└── package.json
+```
+
+### Возможности EasyCabinet
+
+- ✅ Регистрация новых игроков
+- ✅ Авторизация с JWT + Refresh Tokens
+- ✅ Профиль игрока с 3D-превью скина
+- ✅ Загрузка скинов (Steve/Alex модели)
+- ✅ Загрузка плащей (capes)
+- ✅ Сброс пароля через email
+- ✅ Интеграция с AuroraLauncher
+- ✅ Docker-деплой из коробки
+- ✅ Поддержка S3-хранилищ (MinIO, AWS S3)
+- ✅ Опциональный Redis для кэша
+
+### Управление EasyCabinet
+
+```bash
+# Запустить все сервисы
+docker-compose up -d
+
+# Остановить все сервисы
+docker-compose down
+
+# Пересобрать контейнеры после изменений
+docker-compose up --build -d
+
+# Посмотреть логи
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Выполнить миграции БД
+docker-compose exec backend npx prisma migrate deploy
+
+# Создать нового пользователя вручную (через MySQL)
+docker-compose exec mysql mysql -u cabinet -pcabinetpass easycabinet
+```
+
+### Поток работы игрока
+
+```mermaid
+sequenceDiagram
+    actor Player as Игрок
+    participant Browser as Браузер
+    participant Frontend as SolidJS Frontend
+    participant Backend as NestJS Backend
+    participant MySQL as MySQL DB
+    participant Launcher as AuroraLauncher
+
+    Player->>Browser: Открывает http://localhost:3000
+    Browser->>Frontend: GET /
+    Frontend-->>Browser: Главная страница
+
+    Player->>Browser: Нажимает "Создать аккаунт"
+    Browser->>Frontend: Переход на /register
+    Player->>Browser: Вводит email, login, password
+    Browser->>Backend: POST /auth/register
+    Backend->>MySQL: INSERT User
+    MySQL-->>Backend: OK
+    Backend-->>Browser: 201 Created
+    Browser-->>Player: "Регистрация успешна"
+
+    Player->>Browser: Переход на /login
+    Player->>Browser: Вводит login + password
+    Browser->>Backend: POST /auth/login
+    Backend->>MySQL: SELECT User WHERE login=?
+    MySQL-->>Backend: User data
+    Backend->>Backend: Проверка bcrypt hash
+    Backend-->>Browser: JWT accessToken + refreshToken (cookie)
+    Browser-->>Player: Перенаправление на /profile
+
+    Player->>Browser: Загружает скин
+    Browser->>Backend: PUT /users (multipart/form-data)
+    Backend->>Backend: Обработка изображения (sharp)
+    Backend->>MySQL: UPDATE User SET skinHash=?
+    Backend-->>Browser: 200 OK
+    Browser-->>Player: "Скин обновлён"
+
+    Note over Player,Launcher: Запуск игры через AuroraLauncher
+    Launcher->>Backend: POST /aurora/auth {login, password}
+    Backend->>MySQL: Проверка пользователя
+    Backend-->>Launcher: UUID + accessToken
+    Launcher->>Launcher: Сохранение токена
+    Launcher->>Backend: POST /aurora/profile {uuid, unsigned=false}
+    Backend-->>Launcher: Профиль + URL скина/плаща
+    Launcher-->>Player: Запуск Minecraft с кастомным скином
+```
+
+### Переменные окружения EasyCabinet
+
+#### Backend `.env`
+
+```env
+# Основные настройки
+HOST="0.0.0.0"
+PORT=4000
+FRONTEND_URL="http://localhost:3000"
+BACKEND_URL="http://localhost:4000"
+PROJECT_NAME="EasyCabinet"
+
+# JWT авторизация
+JWT_SECRET="ваш-секретный-ключ-минимум-32-символа"
+JWT_EXPIRES_IN="30m"
+
+# Cookie (refresh token)
+COOKIE_SECURE=false              # true для production с HTTPS
+COOKIE_SECRET="cookie-секрет"
+COOKIE_DOMAIN="localhost"        # ваш домен для production
+COOKIE_EXPIRES_IN=2592000        # 30 дней
+
+# База данных
+DATABASE_URL="mysql://cabinet:cabinetpass@mysql:3306/easycabinet"
+
+# Email (опционально)
+USE_SENDMAIL=false
+EMAIL_FROM="no-reply@example.com"
+SMTP_HOST="localhost"
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER="user"
+SMTP_PASS="pass"
+
+# Redis (опционально)
+REDIS_URL=""
+
+# S3 хранилище (опционально)
+STORAGE_FORMAT="local"           # local или s3
+S3_ACCESS_KEY_ID="minioadmin"
+S3_SECRET_ACCESS_KEY="minioadmin"
+S3_ENDPOINT="http://127.0.0.1:9000"
+S3_REGION="not-used"
+S3_BUCKET="easy-cabinet"
+S3_PUBLIC_URL="http://127.0.0.1:9000"
+```
+
+#### Frontend `.env`
+
+```env
+VITE_API_URL="http://localhost:4000"
+```
+
+### Страницы EasyCabinet
+
+| Путь | Описание | Авторизация |
+|------|----------|-------------|
+| `/` | Главная страница с кнопками скачивания лаунчера | Нет |
+| `/register` | Регистрация нового игрока | Нет |
+| `/login` | Вход в систему | Нет |
+| `/profile` | Профиль игрока + загрузка скинов/плащей | Да |
+| `/forgot-password` | Запрос сброса пароля | Нет |
+| `/change-password` | Смена пароля по токену | Нет |
+
+### Особенности реализации
+
+**Безопасность:**
+- Пароли хешируются с помощью bcrypt (10 раундов)
+- JWT токены для API-запросов (короткий срок жизни)
+- HTTP-only signed cookies для refresh tokens (долгий срок жизни)
+- CORS настроен только для FRONTEND_URL
+- Валидация всех входных данных через class-validator
+
+**Хранение файлов:**
+- Локальное хранилище: `uploads/skins/` и `uploads/capes/`
+- S3-совместимое хранилище (MinIO, AWS S3, DigitalOcean Spaces)
+- Автоматическая обработка изображений через sharp
+- Генерация уникальных хешей для файлов
+
+**Кэширование:**
+- Встроенный file-based кэш (cache-manager-fs-hash)
+- Опциональная поддержка Redis для production
+
+### Troubleshooting
+
+**Проблема:** Backend не может подключиться к MySQL
+
+```bash
+# Проверить статус MySQL
+docker-compose ps mysql
+
+# Посмотреть логи MySQL
+docker-compose logs mysql
+
+# Убедиться что healthcheck прошёл
+docker-compose exec mysql mysqladmin ping -h localhost
+```
+
+**Проблема:** Frontend не может подключиться к Backend
+
+```bash
+# Проверить что Backend запущен
+curl http://localhost:4000
+
+# Проверить переменную VITE_API_URL в frontend/.env
+cat packages/frontend/.env
+```
+
+**Проблема:** Ошибка при загрузке скина
+
+```bash
+# Проверить права на папку uploads
+docker-compose exec backend ls -la /app/uploads
+
+# Проверить логи Backend
+docker-compose logs backend | grep -i error
+```
+
+### Production деплой
+
+Для production-окружения:
+
+1. Измените `COOKIE_SECURE=true` в backend/.env
+2. Настройте HTTPS через Nginx или Traefik
+3. Используйте сильные случайные значения для `JWT_SECRET` и `COOKIE_SECRET`
+4. Настройте SMTP для email-уведомлений
+5. Рассмотрите использование Redis для кэша
+6. Настройте S3-хранилище для масштабируемости
+7. Настройте регулярные бэкапы MySQL
+
+```bash
+# Пример backup MySQL
+docker-compose exec mysql mysqldump -u cabinet -pcabinetpass easycabinet > backup.sql
+
+# Восстановление
+docker-compose exec -T mysql mysql -u cabinet -pcabinetpass easycabinet < backup.sql
+```
